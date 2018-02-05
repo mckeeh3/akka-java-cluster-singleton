@@ -16,7 +16,7 @@ class ClusterSingletonAwareActor extends AbstractLoggingActor {
     private int pingId;
     private int pongId;
 
-    ClusterSingletonAwareActor(ActorRef clusterSingletonProxy) {
+    private ClusterSingletonAwareActor(ActorRef clusterSingletonProxy) {
         this.clusterSingletonProxy = clusterSingletonProxy;
     }
 
