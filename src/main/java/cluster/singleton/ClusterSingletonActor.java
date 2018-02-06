@@ -12,18 +12,18 @@ class ClusterSingletonActor extends AbstractLoggingActor {
     }
 
     private void ping(ClusterSingletonMessages.Ping ping) {
-        log().debug("ping({}) <- {}", ping.id, getSender());
+        log().debug("Ping({}) <- {}", ping.id, getSender());
         getSender().tell(new ClusterSingletonMessages.Pong(ping.id), getSelf());
     }
 
     @Override
     public void preStart() {
-        log().debug("start");
+        log().debug("Start");
     }
 
     @Override
     public void postStop() {
-        log().debug("stop");
+        log().debug("Stop");
     }
 
     static Props props() {
