@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Runner {
@@ -23,13 +24,9 @@ public class Runner {
         List<ActorSystem> actorSystems;
 
         if (args.length == 0) {
-            String[] ports = new String[]{"2551", "2552", "0"};
-            writef("Start cluster on default ports %s%n", (Object[]) ports);
-
-            actorSystems = startup(ports);
+            actorSystems = startupClusterNodes(Arrays.asList("2551", "2552", "0"));
         } else {
-            writef("Start cluster on port(s) %s%n", (Object[]) args);
-            actorSystems = startup(args);
+            actorSystems = startupClusterNodes(Arrays.asList(args));
         }
 
         writef("Hit enter to stop%n");
@@ -41,11 +38,12 @@ public class Runner {
         }
     }
 
-    private static List<ActorSystem> startup(String[] ports) {
+    private static List<ActorSystem> startupClusterNodes(List<String> ports) {
+        writef("Start cluster on port(s) %s%n", ports);
         List<ActorSystem> actorSystems = new ArrayList<>();
 
         for (String port : ports) {
-            ActorSystem actorSystem = ActorSystem.create("singleton", setupConfig(port));
+            ActorSystem actorSystem = ActorSystem.create("singleton", setupClusterNodeConfig(port));
 
             actorSystem.actorOf(ClusterListenerActor.props(), "clusterListener");
             createClusterSingletonManagerActor(actorSystem);
@@ -56,7 +54,7 @@ public class Runner {
         return actorSystems;
     }
 
-    private static Config setupConfig(String port) {
+    private static Config setupClusterNodeConfig(String port) {
         return ConfigFactory.parseString(
                 String.format("akka.remote.netty.tcp.port=%s%n", port) +
                         String.format("akka.remote.artery.canonical.port=%s%n", port))
