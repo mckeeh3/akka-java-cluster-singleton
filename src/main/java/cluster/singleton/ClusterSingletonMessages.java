@@ -15,6 +15,7 @@ class ClusterSingletonMessages {
             return String.format("%s[%d]", getClass().getSimpleName(), id);
         }
     }
+
     static class Pong implements Serializable {
         final int id;
 
