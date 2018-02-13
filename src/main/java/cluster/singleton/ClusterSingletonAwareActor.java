@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 class ClusterSingletonAwareActor extends AbstractLoggingActor {
     private final ActorRef clusterSingletonProxy;
-    private final FiniteDuration tickInterval = Duration.create(10, TimeUnit.SECONDS);
+    private final FiniteDuration tickInterval = Duration.create(5, TimeUnit.SECONDS);
     private Cancellable ticker;
     private int pingId;
     private int pongId;
