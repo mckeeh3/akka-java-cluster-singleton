@@ -31,11 +31,11 @@ class ClusterSingletonAwareActor extends AbstractLoggingActor {
     private void tick() {
         ++pingId;
         log().debug("Ping({}) -> {}", pingId, clusterSingletonProxy);
-        clusterSingletonProxy.tell(new ClusterSingletonMessages.Ping(pingId), getSelf());
+        clusterSingletonProxy.tell(new ClusterSingletonMessages.Ping(pingId), self());
     }
 
     private void pong(ClusterSingletonMessages.Pong pong) {
-        log().debug("Pong({}) <- {}", pong.id, getSender());
+        log().debug("Pong({}) <- {}", pong.id, sender());
         if (++pongId != pong.id) {
             log().warning("Pong id invalid, expected {}, actual {}", pongId, pong.id);
         }
@@ -45,12 +45,12 @@ class ClusterSingletonAwareActor extends AbstractLoggingActor {
     @Override
     public void preStart() {
         log().debug("Start");
-        ticker = getContext().getSystem().scheduler()
+        ticker = context().system().scheduler()
                 .schedule(Duration.Zero(),
                         tickInterval,
-                        getSelf(),
+                        self(),
                         "tick",
-                        getContext().getSystem().dispatcher(),
+                        context().system().dispatcher(),
                         null);
     }
 

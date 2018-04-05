@@ -12,8 +12,8 @@ class ClusterSingletonActor extends AbstractLoggingActor {
     }
 
     private void ping(ClusterSingletonMessages.Ping ping) {
-        log().debug("Ping({}) <- {}", ping.id, getSender());
-        getSender().tell(new ClusterSingletonMessages.Pong(ping.id), getSelf());
+        log().debug("Ping({}) <- {}", ping.id, sender());
+        sender().tell(new ClusterSingletonMessages.Pong(ping.id), self());
     }
 
     @Override
