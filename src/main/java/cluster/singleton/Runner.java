@@ -1,9 +1,7 @@
 package cluster.singleton;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.PoisonPill;
-import akka.actor.Props;
+import akka.Done;
+import akka.actor.*;
 import akka.cluster.Cluster;
 import akka.cluster.singleton.ClusterSingletonManager;
 import akka.cluster.singleton.ClusterSingletonManagerSettings;
@@ -18,6 +16,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class Runner {
     public static void main(String[] args) {
@@ -39,12 +38,15 @@ public class Runner {
 
         ports.forEach(port -> {
             ActorSystem actorSystem = ActorSystem.create("singleton", setupClusterNodeConfig(port));
+            actorSystems.add(actorSystem);
 
             actorSystem.actorOf(ClusterListenerActor.props(), "clusterListener");
             createClusterSingletonManagerActor(actorSystem);
             actorSystem.actorOf(ClusterSingletonAwareActor.props(createClusterSingletonProxyActor(actorSystem)), "clusterSingletonAware");
 
-            actorSystems.add(actorSystem);
+            addCoordinatedShutdownTask(actorSystem, CoordinatedShutdown.PhaseClusterShutdown());
+
+            actorSystem.log().info("Akka node {}", actorSystem.provider().getDefaultAddress());
         });
 
         return actorSystems;
@@ -74,6 +76,16 @@ public class Runner {
         );
 
         return actorSystem.actorOf(clusterSingletonProxyProps, "clusterSingletonProxy");
+    }
+
+    private static void addCoordinatedShutdownTask(ActorSystem actorSystem, String coordindateShutdownPhase) {
+        CoordinatedShutdown.get(actorSystem).addTask(
+                coordindateShutdownPhase,
+                coordindateShutdownPhase,
+                () -> {
+                    actorSystem.log().warning("Coordinated shutdown phase {}", coordindateShutdownPhase);
+                    return CompletableFuture.completedFuture(Done.getInstance());
+                });
     }
 
     private static void hitEnterToStop() {
