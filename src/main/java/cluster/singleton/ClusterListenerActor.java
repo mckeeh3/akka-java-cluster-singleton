@@ -1,7 +1,6 @@
 package cluster.singleton;
 
 import akka.actor.AbstractLoggingActor;
-import akka.actor.Address;
 import akka.actor.Cancellable;
 import akka.actor.Props;
 import akka.cluster.Cluster;

@@ -7,14 +7,14 @@ import akka.actor.Props;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 class ClusterSingletonAwareActor extends AbstractLoggingActor {
     private final ActorRef clusterSingletonProxy;
     private final FiniteDuration tickInterval = Duration.create(5, TimeUnit.SECONDS);
     private Cancellable ticker;
-    private int pingId;
-    private int pongId;
+    private Message.Ping ping;
 
     private ClusterSingletonAwareActor(ActorRef clusterSingletonProxy) {
         this.clusterSingletonProxy = clusterSingletonProxy;
@@ -24,22 +24,21 @@ class ClusterSingletonAwareActor extends AbstractLoggingActor {
     public Receive createReceive() {
         return receiveBuilder()
                 .matchEquals("tick", t -> tick())
-                .match(ClusterSingletonMessages.Pong.class, this::pong)
+                .match(Message.Pong.class, this::pong)
                 .build();
     }
 
     private void tick() {
-        ++pingId;
-        log().debug("Ping({}) -> {}", pingId, clusterSingletonProxy);
-        clusterSingletonProxy.tell(new ClusterSingletonMessages.Ping(pingId), self());
+        ping = new Message.Ping();
+        log().debug("{} -> {}", ping, clusterSingletonProxy);
+        clusterSingletonProxy.tell(ping, self());
     }
 
-    private void pong(ClusterSingletonMessages.Pong pong) {
-        log().debug("Pong({}) <- {}", pong.id, sender());
-        if (++pongId != pong.id) {
-            log().warning("Pong id invalid, expected {}, actual {}", pongId, pong.id);
+    private void pong(Message.Pong pong) {
+        log().debug("{} <- {}", pong, sender());
+        if (ping.time != pong.pingTime) {
+            log().warning("Pong id invalid, expected {}, actual {}", ping.time, pong.pingTime);
         }
-        pongId = pong.id;
     }
 
     @Override
@@ -62,5 +61,37 @@ class ClusterSingletonAwareActor extends AbstractLoggingActor {
 
     static Props props(ActorRef clusterSingletonProxy) {
         return Props.create(ClusterSingletonAwareActor.class, clusterSingletonProxy);
+    }
+
+    interface Message {
+        class Ping implements Serializable {
+            final long time;
+
+            Ping() {
+                time = System.nanoTime();
+            }
+
+            @Override
+            public String toString() {
+                return String.format("%s[%dus]", getClass().getSimpleName(), time);
+            }
+        }
+
+        class Pong implements Serializable {
+            final long pingTime;
+
+            private Pong(long pingTime) {
+                this.pingTime = pingTime;
+            }
+
+            static Pong from(Ping ping) {
+                return new Pong(ping.time);
+            }
+
+            @Override
+            public String toString() {
+                return String.format("%s[elapsed %.9fs, %dus]", getClass().getSimpleName(), (System.nanoTime() - pingTime) / 1000000000.0, pingTime);
+            }
+        }
     }
 }

@@ -7,13 +7,13 @@ class ClusterSingletonActor extends AbstractLoggingActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(ClusterSingletonMessages.Ping.class, this::ping)
+                .match(ClusterSingletonAwareActor.Message.Ping.class, this::ping)
                 .build();
     }
 
-    private void ping(ClusterSingletonMessages.Ping ping) {
-        log().debug("Ping({}) <- {}", ping.id, sender());
-        sender().tell(new ClusterSingletonMessages.Pong(ping.id), self());
+    private void ping(ClusterSingletonAwareActor.Message.Ping ping) {
+        log().debug("{} <- {}", ping, sender());
+        sender().tell(ClusterSingletonAwareActor.Message.Pong.from(ping), self());
     }
 
     @Override
