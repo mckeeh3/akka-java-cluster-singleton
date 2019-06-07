@@ -3,7 +3,7 @@
 ### Introduction
 
 This is a Java, Maven, Akka project that demonstrates how to setup a basic
-[Akka Cluster](https://doc.akka.io/docs/akka/current/index-cluster.html). In this project the focus is on cluster singletons.
+[Akka Cluster](https://doc.akka.io/docs/akka/current/index-cluster.html). In this project the focus is on [cluster singletons](https://doc.akka.io/docs/akka/current/cluster-singleton.html#cluster-singleton).
 
 This project is one in a series of projects that starts with a simple Akka Cluster project and progressively builds up to examples of event sourcing and command query responsibility segregation.
 
@@ -16,8 +16,6 @@ The project series is composed of the following GitHub repos:
 * [akka-java-cluster-persistence-query](https://github.com/mckeeh3/akka-java-cluster-persistence-query)
 
 Each project can be cloned, built, and runs independently of the other projects.
-
-This project contains an example implementation of a cluster. Here we will focus on cluster configuration and on running an Akka cluster with multiple nodes.
 
 ### About Akka Clustering Singletons
 
